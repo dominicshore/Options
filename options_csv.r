@@ -7,7 +7,7 @@ s <- Sys.time()
 path <- 'C:/Users/Dos/Documents/R/Options/Options/OptionsTable.csv'
 
 # Function to read in previous options_table
-prev_table <- fread(path, drop = "V1") 
+prev_table <- as.data.frame(fread(path, drop = "V1"))
 
 # Need to coerce some character formatting into date/time  before calling rbind function on row 18
 prev_table$expiry <- as.Date(prev_table$expiry, format = "%Y-%m-%d")
