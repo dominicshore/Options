@@ -10,11 +10,11 @@ path <- 'C:/Users/Dos/Documents/R/Options/Options/OptionsTable.csv'
 prev_table <- fread(path, drop = "V1") 
 
 # Need to coerce some character formatting into date/time  before calling rbind function on row 18
-prev_table$expiry <- as.Date(prev_table$expiry, format = "%d/%m/%Y")
-prev_table$retrieved <- as.POSIXct(strptime(prev_table$retrieved, "%d/%m/%Y %H:%M"))
+prev_table$expiry <- as.Date(prev_table$expiry, format = "%Y-%m-%d")
+prev_table$retrieved <- as.POSIXct(strptime(prev_table$retrieved, "%Y-%m-%d %H:%M:%S"))
 
 # Reading the list of all options currently tradable from the ASX
-ASXListed <- read.csv("http://www.asx.com.au/data/ASXCLDerivativesMasterList.csv", stringsAsFactors = FALSE)
+#ASXListed <- read.csv("http://www.asx.com.au/data/ASXCLDerivativesMasterList.csv", stringsAsFactors = FALSE)
 unique_stocks <- unique(ASXListed$Underlying)
 
 # Removing options series that does not cover individual stocks
