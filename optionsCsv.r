@@ -2,34 +2,33 @@ library(data.table)
 library(dplyr)
 require(purrr)
 s <- Sys.time()
-#Get previously saved options data from CSV file
+
+# Path to previously saved options data from CSV file
 path <- 'C:/Users/Dos/Documents/R/Options/Options/OptionsTable.csv'
 
-prev_table <- fread(path, drop = "V1")
-prev_table <- prev_table %>% 
-                    mutate(
-                          symbol        = symbol,
-                          retrieved     = Sys.time(),
-                          open.interest = suppressWarnings(as.integer(gsub(",", "", open.interest))),
-                          premium       = suppressWarnings(as.numeric(premium)),
-                          bid           = suppressWarnings(as.numeric(bid)),
-                          ask           = suppressWarnings(as.numeric(ask)),
-                          volume        = suppressWarnings(as.integer(gsub(",", "", volume))),
-                          expiry        = as.Date(expiry, format = "%d/%m/%Y")
-                          )
+# Function to read in previous options_table
+prev_table <- fread(path, drop = "V1") 
 
+# Need to coerce some character formatting into date/time  before calling rbind function on row 18
+prev_table$expiry <- as.Date(prev_table$expiry, format = "%d/%m/%Y")
+prev_table$retrieved <- as.POSIXct(strptime(prev_table$retrieved, "%d/%m/%Y %H:%M"))
+
+# Reading the list of all options currently tradable from the ASX
 ASXListed <- read.csv("http://www.asx.com.au/data/ASXCLDerivativesMasterList.csv", stringsAsFactors = FALSE)
-UniqueStocks <- unique(ASXListed$Underlying)
-UniqueStocks <- UniqueStocks[-grep(pattern="[[:digit:]]", x=UniqueStocks)]
-UniqueStocks <- UniqueStocks[-grep(pattern="XJO", x=UniqueStocks)]
+unique_stocks <- unique(ASXListed$Underlying)
 
+# Removing options series that does not cover individual stocks
+unique_stocks <- unique_stocks[-grep(pattern="[[:digit:]]", x=unique_stocks)]
+unique_stocks <- unique_stocks[-grep(pattern="XJO", x=unique_stocks)]
 
-new_table <- map_df(UniqueStocks, getOptionChainAsx)
+# Using map_ function from the purrr package because it is quicker than base-r's control flow options
+new_table <- map_df(unique_stocks, getOptionChainAsx)
 
-Options_table <- rbind(prev_table, new_table)
+# Binding current and previous dataframes
+options_table <- rbind(prev_table, new_table)
 
-write.csv(Options_table, file = 'OptionsTable.csv')
+write.csv(options_table, file = 'OptionsTable.csv')
 
 e <- Sys.time()
 tt <- e-s
-tt
+tt 
