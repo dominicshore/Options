@@ -8,7 +8,7 @@ require(XML)
 require(plyr)
 
 
-COLORDER = c("symbol", "type", "expiry", "strike", "premium", "bid", "ask", "volume", "open.interest", "retrieved")
+COLORDER = c("symbol", "code", "type", "expiry", "strike", "premium", "bid", "ask", "volume", "open.interest", "retrieved")
 
 
 # AUSTRALIAN OPTIONS --------------------------------------------------------------------------------------------------
@@ -26,9 +26,10 @@ getOptionChainAsx <- function(symbol) {
   #
   options = (html %>% html_nodes("table.options") %>% html_table(header = TRUE))[[2]] %>%
     plyr::rename(c("Bid" = "bid", "Offer" = "ask", "Openinterest" = "open.interest", "Volume" = "volume", "Expirydate" = "expiry",
-                   "P/C" = "type", "Margin Price" = "premium", "Exercise" = "strike")) %>%
+                   "P/C" = "type", "Margin Price" = "premium", "Exercise" = "strike", "Code" = "code")) %>%
     transform(
       symbol        = symbol,
+      code          = code,
       retrieved     = Sys.time(),
       open.interest = suppressWarnings(as.integer(gsub(",", "", open.interest))),
       premium       = suppressWarnings(as.numeric(premium)),
